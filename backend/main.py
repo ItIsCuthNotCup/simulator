@@ -1,7 +1,12 @@
 """FastAPI backend for prompt-to-simulation web app."""
 
+import os
+from pathlib import Path
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 from pydantic import BaseModel
 
 from prompt_parser import parse_prompt
@@ -16,6 +21,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+FRONTEND_DIST = Path(__file__).parent.parent / "frontend" / "dist"
 
 
 class GenerateRequest(BaseModel):
@@ -47,3 +54,16 @@ def run(req: RunRequest):
 @app.get("/health")
 def health():
     return {"status": "ok"}
+
+
+# Serve frontend static files
+if FRONTEND_DIST.exists():
+    app.mount("/assets", StaticFiles(directory=FRONTEND_DIST / "assets"), name="assets")
+
+    @app.get("/{full_path:path}")
+    def serve_frontend(full_path: str):
+        """Serve the React SPA for any non-API route."""
+        file_path = FRONTEND_DIST / full_path
+        if full_path and file_path.exists() and file_path.is_file():
+            return FileResponse(file_path)
+        return FileResponse(FRONTEND_DIST / "index.html")
