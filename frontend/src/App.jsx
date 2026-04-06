@@ -4,7 +4,7 @@ import ParameterPanel from './components/ParameterPanel';
 import MetricsPanel from './components/MetricsPanel';
 import './App.css';
 
-const API_URL = 'http://localhost:8000';
+const API_URL = '';
 
 const EXAMPLE_PROMPTS = [
   'simulate people spreading a rumor in a crowded space',
